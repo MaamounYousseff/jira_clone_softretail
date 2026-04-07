@@ -163,51 +163,6 @@ public with sharing class WorkflowController {
         }
     }
     
-    /**
-     * @description Update an existing Validation Rule
-     * @param validationRuleId - The ValidationRule__c record Id
-     * @param ticketField - The updated ticket field
-     * @param validationType - The updated validation type
-     * @return APIResponse with success status
-     */
-    @AuraEnabled
-    public static APIResponse updateValidationRule(
-        String validationRuleId, 
-        String ticketField, 
-        String validationType
-    ) {
-        try {
-            // Validate inputs
-            if (String.isBlank(validationRuleId) || String.isBlank(ticketField) || String.isBlank(validationType)) {
-                return new APIResponse(false, 'Missing required parameters');
-            }
-            
-            // Fetch the Validation Rule
-            List<ValidationRule__c> rules = [
-                SELECT Id, TicketField__c, Type__c, RecordStatus__c 
-                FROM ValidationRule__c 
-                WHERE Id = :validationRuleId 
-                LIMIT 1
-            ];
-            
-            if (rules.isEmpty()) {
-                return new APIResponse(false, 'Validation Rule not found');
-            }
-            
-            // Update the rule
-            ValidationRule__c rule = rules[0];
-            rule.TicketField__c = ticketField;
-            rule.Type__c = validationType;
-            
-            update rule;
-            
-            return new APIResponse(true, 'Validation Rule updated successfully');
-        } catch (DmlException ex) {
-            return new APIResponse(false, 'DML Error: ' + ex.getMessage());
-        } catch (Exception ex) {
-            return new APIResponse(false, 'Error updating validation rule: ' + ex.getMessage());
-        }
-    }
     
     /**
      * @description Delete a Validation Rule (soft delete by setting status to deleted)

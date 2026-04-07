@@ -103,36 +103,7 @@ public class WorkflowControllerTest {
         Assert.areEqual('Summary__c', rule.TicketField__c, 'Ticket field should match');
     }
     
-    /**
-     * Test updateValidationRule method
-     */
-    @isTest
-    static void testUpdateValidationRule() {
-        WorkflowTransition__c transition = [SELECT Id FROM WorkflowTransition__c LIMIT 1];
-        
-        // First create a validation rule
-        ValidationRule__c rule = new ValidationRule__c(
-            WorkflowTransition__c = transition.Id,
-            TicketField__c = 'Summary__c',
-            Type__c = WorkflowConstants.VALIDATION_TYPE_NOT_EQUALS,
-            RecordStatus__c = WorkflowConstants.RECORD_STATUS_PENDING
-        );
-        insert rule;
-        
-        Test.startTest();
-        APIResponse result = WorkflowController.updateValidationRule(
-            rule.Id,
-            'Description__c',
-            WorkflowConstants.VALIDATION_TYPE_NOT_EQUALS
-        );
-        Test.stopTest();
-        
-        Assert.isTrue(result.success, 'Update validation rule should succeed');
-        
-        // Verify the update
-        ValidationRule__c updatedRule = [SELECT TicketField__c FROM ValidationRule__c WHERE Id = :rule.Id];
-        Assert.areEqual('Description__c', updatedRule.TicketField__c, 'Ticket field should be updated');
-    }
+
     
     /**
      * Test deleteValidationRule method (soft delete)
@@ -283,6 +254,24 @@ public class WorkflowControllerTest {
         Test.stopTest();
         
         Assert.isFalse(result.success, 'Should fail when trying to activate non-pending rule');
+        Assert.isTrue(result.message.contains('pending'), 'Error message should mention pending status');
+    }
+    
+    /**
+     * Test error handling - activating already active workflow transition
+     */
+    @isTest
+    static void testActivateAlreadyActiveWorkflowTransition() {
+        // Get the test transition and set it to active
+        WorkflowTransition__c transition = [SELECT Id, RecordStatus__c FROM WorkflowTransition__c LIMIT 1];
+        transition.RecordStatus__c = WorkflowConstants.RECORD_STATUS_ACTIVE;
+        update transition;
+        
+        Test.startTest();
+        APIResponse result = WorkflowController.activateWorkflowTransition(transition.Id);
+        Test.stopTest();
+        
+        Assert.isFalse(result.success, 'Should fail when trying to activate non-pending transition');
         Assert.isTrue(result.message.contains('pending'), 'Error message should mention pending status');
     }
 }
