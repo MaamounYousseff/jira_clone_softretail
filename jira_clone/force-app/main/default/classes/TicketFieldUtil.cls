@@ -38,7 +38,7 @@ public class TicketFieldUtil {
      * @return Boolean - true if field is valid, false otherwise
      */
     public static Boolean isValidTicketField(String fieldName) {
-        return WorkflowConstants.TICKET_FIELD_API_NAMES.containsValue(fieldName);
+        return WorkflowConstants.TICKET_FIELD_API_NAMES.values().contains(fieldName);
     }
     
     /**
